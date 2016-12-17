@@ -1,5 +1,7 @@
+import random
+from train import *
+
 batch_size = 1024
-nb_classes = 8
 nb_epoch = 80
 data_augmentation = True
 num_folds = 2

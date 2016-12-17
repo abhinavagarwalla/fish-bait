@@ -6,10 +6,11 @@ import datetime
 import pandas as pd
 import time
 from keras.utils import np_utils
+from sklearn.externals import joblib
 
 def get_im_cv2(path):
     img = cv2.imread(path)
-    resized = cv2.resize(img, (32, 32), cv2.INTER_LINEAR)
+    resized = cv2.resize(img, (224, 224), cv2.INTER_LINEAR)
     return resized
 
 def load_train():
@@ -51,6 +52,11 @@ def load_test():
     return X_test, X_test_id
 
 def read_and_normalize_train_data():
+    if os.path.exists('../data/train_data.pkl'):
+        print "Loading saved train pickle"
+        train_data, train_target, train_id = joblib.load("../data/train_data.pkl")
+        return train_data, train_target, train_id
+
     train_data, train_target, train_id = load_train()
 
     print('Convert to numpy...')
@@ -68,10 +74,16 @@ def read_and_normalize_train_data():
 
     print('Train shape:', train_data.shape)
     print(train_data.shape[0], 'train samples')
+    joblib.dump((train_data, train_target, train_id), "../data/train_data.pkl", compress=True)
     return train_data, train_target, train_id
 
 
 def read_and_normalize_test_data():
+    if os.path.exists('../data/test_data.pkl'):
+        print "Loading saved test pickle"
+        test_data, test_id = joblib.load("../data/test_data.pkl")
+        return test_data, test_id
+
     start_time = time.time()
     test_data, test_id = load_test()
 
@@ -85,4 +97,5 @@ def read_and_normalize_test_data():
     print('Test shape:', test_data.shape)
     print(test_data.shape[0], 'test samples')
     print('Read and process test data time: {} seconds'.format(round(time.time() - start_time, 2)))
+    joblib.dump((test_data, test_id), "../data/test_data.pkl", compress=True)
     return test_data, test_id

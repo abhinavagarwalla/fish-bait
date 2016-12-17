@@ -94,10 +94,14 @@ def simple_model_level3(img_dim = None, nb_classes = 10):
 
     model.add(Convolution2D(64, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
+    model.add(Convolution2D(64, 3, 3))
+    model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
 
     model.add(Convolution2D(128, 3, 3, border_mode='same'))
+    model.add(Activation('relu'))
+    model.add(Convolution2D(128, 3, 3))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.5))
@@ -119,6 +123,7 @@ def simple_model_level3(img_dim = None, nb_classes = 10):
     model.compile(loss='categorical_crossentropy',
                   optimizer=nadam,
                   metrics=['accuracy'])
+    return model
 
 def simple_model_with_BN(img_dim = None, nb_classes = 10):
     model = Sequential()

@@ -1,6 +1,7 @@
 import keras.callbacks
 import numpy as np
 import math
+
 class SaveBestModel(keras.callbacks.Callback):
     def __init__(self, filepath, verbose=0, thresh=0.005, logs={}):
         super(SaveBestModel, self).__init__()
