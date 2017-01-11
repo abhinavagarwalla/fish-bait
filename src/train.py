@@ -19,8 +19,8 @@ import random
 nb_classes = 8
 data_augmentation = False
 batch_size = 32
-nb_epoch = 80
-num_folds = 2
+nb_epoch = 10
+num_folds = 3
 
 img_channels = 3
 img_size = 224
@@ -66,7 +66,7 @@ def run_cross_validation_create_models(nfolds=10):
         Y_valid = train_target[test_index]
 
         img_dim = train_data.shape[1:]
-        model = simple_model_level3(img_dim, nb_classes)
+        model = very_simple_model(img_dim, nb_classes)
         print model.summary()
 
         num_fold += 1
@@ -75,7 +75,7 @@ def run_cross_validation_create_models(nfolds=10):
         print('Split valid: ', len(X_valid), len(Y_valid))
 
         callbacks = [
-            EarlyStopping(monitor='val_loss', patience=10, verbose=0),
+            EarlyStopping(monitor='val_loss', patience=3, verbose=0),
             # customcb.SaveBestModel(filepath="../results/retrain_cifar_"+str(jc)+"_best_weights.hdf5",
             # verbose=1, thresh=0.03)
         ]
