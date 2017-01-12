@@ -17,13 +17,10 @@ from sklearn.metrics import log_loss
 import random
 
 nb_classes = 8
-data_augmentation = False
+data_augmentation = True
 batch_size = 32
-nb_epoch = 80
-num_folds = 2
-
-img_channels = 3
-img_size = 224
+nb_epoch = 40
+num_folds = 10
 
 def create_submission(predictions, test_id, info):
     result1 = pd.DataFrame(predictions, columns=['ALB', 'BET', 'DOL', 'LAG', 'NoF', 'OTHER', 'SHARK', 'YFT'])
@@ -75,7 +72,7 @@ def run_cross_validation_create_models(nfolds=10):
         print('Split valid: ', len(X_valid), len(Y_valid))
 
         callbacks = [
-            EarlyStopping(monitor='val_loss', patience=10, verbose=0),
+            EarlyStopping(monitor='val_loss', patience=5, verbose=0),
             # customcb.SaveBestModel(filepath="../results/retrain_cifar_"+str(jc)+"_best_weights.hdf5",
             # verbose=1, thresh=0.03)
         ]
@@ -110,6 +107,7 @@ def run_cross_validation_create_models(nfolds=10):
                                 batch_size=batch_size),
                                 samples_per_epoch=X_train.shape[0],
                                 nb_epoch=nb_epoch,
+                                validation_data=(X_valid, Y_valid),
                                 verbose=2, callbacks=callbacks)
 
         predictions_valid = model.predict(X_valid.astype('float32'), batch_size=batch_size, verbose=2)

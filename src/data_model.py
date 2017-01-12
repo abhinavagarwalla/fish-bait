@@ -14,6 +14,8 @@ from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.optimizers import SGD,Adam,Nadam
 from keras.layers.advanced_activations import PReLU
+from keras.layers import GlobalAveragePooling2D
+from keras.applications import InceptionV3
 
 def prelu_model(img_dim = None, nb_classes = 10):
     model = Sequential()
@@ -99,18 +101,18 @@ def simple_model_level3(img_dim = None, nb_classes = 10):
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
 
-    model.add(Convolution2D(128, 3, 3, border_mode='same'))
-    model.add(Activation('relu'))
-    model.add(Convolution2D(128, 3, 3))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.5))
+    # model.add(Convolution2D(128, 3, 3, border_mode='same'))
+    # model.add(Activation('relu'))
+    # model.add(Convolution2D(128, 3, 3))
+    # model.add(Activation('relu'))
+    # model.add(MaxPooling2D(pool_size=(2, 2)))
+    # model.add(Dropout(0.5))
 
     model.add(Flatten())
     #model.add(Dense(1024,init='glorot_uniform'))
     #model.add(Activation('relu'))
     #model.add(Dropout(0.5))
-    model.add(Dense(512,init='glorot_uniform'))
+    model.add(Dense(1024,init='glorot_uniform'))
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
     model.add(Dense(nb_classes,init='glorot_uniform'))
@@ -121,8 +123,7 @@ def simple_model_level3(img_dim = None, nb_classes = 10):
     adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
     nadam = Nadam(lr=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08, schedule_decay=0.004)
     model.compile(loss='categorical_crossentropy',
-                  optimizer=nadam,
-                  metrics=['accuracy'])
+                  optimizer=adam, metrics=['accuracy'])
     return model
 
 def simple_model_with_BN(img_dim = None, nb_classes = 10):
@@ -207,30 +208,29 @@ def prelu_model_with_BN(img_dim = None, nb_classes = 10):
                   metrics=['accuracy'])
     return model
 
-def ZFTurboSample():
-    model = Sequential()
-    model.add(ZeroPadding2D((1, 1), input_shape=(3, 32, 32), dim_ordering='th'))
-    model.add(Convolution2D(4, 3, 3, activation='relu', dim_ordering='th'))
-    model.add(ZeroPadding2D((1, 1), dim_ordering='th'))
-    model.add(Convolution2D(4, 3, 3, activation='relu', dim_ordering='th'))
-    model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), dim_ordering='th'))
+def inception(img_dim = None, nb_classes = 10):
+    # create the base pre-trained model
+    base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=img_dim)
 
-    model.add(ZeroPadding2D((1, 1), dim_ordering='th'))
-    model.add(Convolution2D(8, 3, 3, activation='relu', dim_ordering='th'))
-    model.add(ZeroPadding2D((1, 1), dim_ordering='th'))
-    model.add(Convolution2D(8, 3, 3, activation='relu', dim_ordering='th'))
-    model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), dim_ordering='th'))
+    # add a global spatial average pooling layer
+    x = base_model.output
+    x = GlobalAveragePooling2D()(x)
+    # let's add a fully-connected layer
+    x = Dense(1024, activation='relu')(x)
+    # and a logistic layer -- let's say we have 200 classes
+    predictions = Dense(nb_classes, activation='softmax')(x)
 
-    model.add(Flatten())
-    model.add(Dense(32, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(32, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(8, activation='softmax'))
+    # this is the model we will train
+    model = Model(input=base_model.input, output=predictions)
 
-    #sgd = SGD(lr=1e-2, decay=1e-6, momentum=0.9, nesterov=True)
-    model.compile(optimizer=Adam(), loss='categorical_crossentropy')
+    # first: train only the top layers (which were randomly initialized)
+    # i.e. freeze all convolutional InceptionV3 layers
+    # for layer in base_model.layers:
+        # layer.trainable = False
 
+    # compile the model (should be done *after* setting layers to non-trainable)
+    model.compile(optimizer='rmsprop', loss='categorical_crossentropy',
+        metrics='accuracy')
     return model
 
 # if __name__ == '__main__':
