@@ -50,6 +50,29 @@ def prelu_model(img_dim = None, nb_classes = 10):
                   metrics=['accuracy'])
     return model
 
+def very_simple_model(img_dim = None, nb_classes = 10):
+    model = Sequential()
+    model.add(ZeroPadding2D((1, 1), input_shape=img_dim, dim_ordering='th'))
+    model.add(Convolution2D(8, 3, 3, activation='relu', dim_ordering='th', init='he_uniform'))
+    model.add(Dropout(0.2))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), dim_ordering='th'))
+    model.add(ZeroPadding2D((1, 1), dim_ordering='th'))
+    model.add(Convolution2D(16, 3, 3, activation='relu', dim_ordering='th', init='he_uniform'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), dim_ordering='th'))
+    model.add(Dropout(0.2))
+    
+    model.add(Flatten())
+    model.add(Dense(96, activation='relu',init='he_uniform'))
+    model.add(Dropout(0.4))
+    model.add(Dense(24, activation='relu',init='he_uniform'))
+    model.add(Dropout(0.2))
+    model.add(Dense(nb_classes, activation='softmax'))
+
+    #sgd = SGD(lr=1e-2, decay=1e-4, momentum=0.89, nesterov=False)
+    model.compile(optimizer=Nadam(), loss='categorical_crossentropy')
+
+    return model
+
 def simple_model(img_dim = None, nb_classes = 10):
     model = Sequential()
 

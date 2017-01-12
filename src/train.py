@@ -22,6 +22,9 @@ batch_size = 64
 nb_epoch = 10
 num_folds = 3
 
+img_channels = 3
+img_size = 224
+
 def create_submission(predictions, test_id, info):
     result1 = pd.DataFrame(predictions, columns=['ALB', 'BET', 'DOL', 'LAG', 'NoF', 'OTHER', 'SHARK', 'YFT'])
     result1.loc[:, 'image'] = pd.Series(test_id, index=result1.index)
