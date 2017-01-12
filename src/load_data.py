@@ -10,7 +10,7 @@ from sklearn.externals import joblib
 
 def get_im_cv2(path):
     img = cv2.imread(path)
-    resized = cv2.resize(img, (72, 128), cv2.INTER_LINEAR)
+    resized = cv2.resize(img, (64, 64), cv2.INTER_LINEAR)
     return resized
 
 def load_train():
