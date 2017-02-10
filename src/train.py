@@ -18,12 +18,12 @@ import random
 
 nb_classes = 8
 data_augmentation = False
-batch_size = 64
-nb_epoch = 10
+batch_size = 8
+nb_epoch = 8
 num_folds = 3
 
 img_channels = 3
-img_size = 224
+img_size = 299
 
 def create_submission(predictions, test_id, info):
     result1 = pd.DataFrame(predictions, columns=['ALB', 'BET', 'DOL', 'LAG', 'NoF', 'OTHER', 'SHARK', 'YFT'])
@@ -66,7 +66,7 @@ def run_cross_validation_create_models(nfolds=10):
         Y_valid = train_target[test_index]
 
         img_dim = train_data.shape[1:]
-        model = very_simple_model(img_dim, nb_classes)
+        model = inception_model(img_dim, nb_classes)
         print model.summary()
 
         num_fold += 1

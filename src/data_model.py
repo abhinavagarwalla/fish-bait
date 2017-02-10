@@ -15,7 +15,8 @@ from keras.layers import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.optimizers import SGD,Adam,Nadam
 from keras.layers.advanced_activations import PReLU
 from keras.layers import GlobalAveragePooling2D
-from keras.applications import InceptionV3
+from keras.applications.inception_v3 import InceptionV3
+from keras.models import Model
 
 def prelu_model(img_dim = None, nb_classes = 10):
     model = Sequential()
@@ -49,6 +50,38 @@ def prelu_model(img_dim = None, nb_classes = 10):
                   optimizer=nadam,
                   metrics=['accuracy'])
     return model
+
+def inception_model(img_dim=None, nb_classes = 10):
+    # create the base pre-trained model
+    base_model = InceptionV3(weights='imagenet', include_top=False)
+
+    # add a global spatial average pooling layer
+    x = base_model.output
+    x = GlobalAveragePooling2D()(x)
+    # let's add a fully-connected layer
+    x = Dense(1024, activation='relu')(x)
+    x = Dense(256, activation='relu')(x)
+    # and a logistic layer -- let's say we have 200 classes
+    predictions = Dense(nb_classes, activation='softmax')(x)
+	
+    # this is the model we will train
+    model = Model(input=base_model.input, output=predictions)
+
+    # compile the model (should be done *after* setting layers to non-trainable)
+    model.compile(optimizer='rmsprop', loss='categorical_crossentropy')
+    return model
+    
+    #for layer in base_model.layers:
+    #    layer.trainable = False
+
+    # train the model on the new data for a few epochs
+    #model.fit_generator(...)
+    
+    #for layer in model.layers:
+    #	layer.trainable = True
+
+    #model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='categorical_crossentropy')
+    #model.fit_generator(...)
 
 def very_simple_model(img_dim = None, nb_classes = 10):
     model = Sequential()
